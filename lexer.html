@@ -1,0 +1,142 @@
+<html>
+<script>
+/*var arr = ["auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"]
+
+function createArrIfNeeded(arr, i) {
+	if (typeof arr[i] != 'array') {
+		arr[i] = []
+	}
+}
+
+var states = [];
+var statesLength = 1;
+var finiteStates = [];
+for (var string in arr) {
+	var state = 0;
+	for (var i = 0; i < string.length; i+=1) {
+		createArrIfNeeded(states, state);
+		var newStateIndex = states[state].indexOf(string[i]);
+		if (newStateIndex < 0) {
+			states[state][string[i]] = statesLength;
+			state = statesLength++;
+		} else {
+			state = states[state][newStateIndex];
+		}
+	}
+	if (finiteStates.indexOf(state) < 0)
+		finiteStates.push(state)
+}
+
+// RPINT
+
+for (var iState = 0; iState < states.length; iState+=1) {
+	for (var edge in states[iState]) {
+		console.log(edge + "\n")
+	}
+}
+
+*/
+
+
+function f(){
+var yy_accept =
+    [   0,
+        0,    0,    6,    4,    3,    3,    4,    0,    0,    0,
+        0,    1,    2,    0
+    ] ;
+
+var yy_ec =
+    [   0,
+        1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
+        2,    2,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    2,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    4,    1,    5,    1,
+
+        6,    1,    1,    7,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    8,    9,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1
+    ] ;
+
+var yy_meta =
+    [   0,
+        1,    1,    1,    1,    1,    1,    1,    1,    1
+    ] ;
+
+var yy_base =
+    [   0,
+        0,    4,   15,   16,   16,   16,    6,    5,    8,    5,
+        0,   16,   16,   16,    0
+    ] ;
+
+var yy_def =
+    [   0,
+       15,   15,   14,   14,   14,   14,   14,   14,   14,   14,
+       14,   14,   14,    0,   14
+    ] ;
+
+var yy_nxt =
+    [   0,
+        4,    5,    6,   14,    7,    5,    6,   13,    7,    8,
+       12,   11,    9,   10,   14,    3,   14,   14,   14,   14,
+       14,   14,   14,   14,   14
+    ] ;
+
+var yy_chk =
+    [   0,
+       15,    1,    1,    0,    1,    2,    2,   11,    2,    7,
+       10,    9,    7,    8,    3,   14,   14,   14,   14,   14,
+       14,   14,   14,   14,   14
+    ] ;
+
+var	yy_current_state = 1;
+
+
+var string="ca casese chart ";
+var i = 0;
+do {
+	yy_current_state = 1;
+	do {
+		var yy_c = yy_ec[string[i].charCodeAt()];
+		if ( yy_accept[yy_current_state] )
+			{
+			console.log('accepted at ' + i + "\n accept code: " + yy_accept[yy_current_state]);
+			}
+		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
+			{
+			yy_current_state = yy_def[yy_current_state];
+			if ( yy_current_state >= 15 )
+				yy_c = yy_meta[yy_c];
+			}
+		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
+		++i
+	} while (yy_base[yy_current_state] != 16)
+	if ( yy_accept[yy_current_state] )
+			{
+			console.log('2::: accepted at ' + i + "\n accept code: " + yy_accept[yy_current_state]);
+			}
+} while ( i != string.length ); //yy_base[yy_current_state] != 16 );
+console.log("finished at " + i + " of " + string.length)
+}
+f()
+</script>
+</html>
