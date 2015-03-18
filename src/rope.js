@@ -66,10 +66,10 @@ RopePosition.prototype.determineInfo = function(ropeLeaf) {
 		if (this._isDefinedLinesColumn()) {
 			this.count = 0;
 
-			for (var iLines = 0, iSymbols = 0; (iLines < this.lines) && (iSymbols < this.symbolsLastLine); this.count += 1) {
-				if (ropeLeaf.value[i] == '\n') {
+			for (var iLines = 1, iSymbols = 1; (iLines < this.lines) || ((iLines === this.lines) && (iSymbols < this.symbolsLastLine)); this.count += 1) {
+				if (ropeLeaf.value[this.count] == '\n') {
 					iLines += 1;
-					iSymbols = 0;
+					iSymbols = 1;
 				} else
 					iSymbols += 1;
 			}
@@ -129,13 +129,21 @@ RopePosition.prototype.isLess = function(position) {
 	throw Error("RopePosition's don't contain the appropriate info")
 }
 
-/*RopePosition.prototype.isEqual = function(position) {
+RopePosition.prototype.isEqual = function(position) {
+	var ok = false;
+	if (this._isDefinedCount() && position._isDefinedCount())
+		ok = this.count === position.count;
 
+	if (this._isDefinedLinesColumn && position._isDefinedLinesColumn())
+		ok = ok && (this.lines === position.lines) && (this.symbolsLastLine === position.symbolsLastLine)
+
+	return ok;
 }
 
-RopePosition.prototype.isLessOrEqual = function(position) {
+/*RopePosition.prototype.isLessOrEqual = function(position) {
 	return this.isLess(position) || this.isEqual(position);
 }*/
+
 RopePosition.prototype.split = function(positionSecond) {
 	var left = RopePosition(), right = RopePosition();
 	if (this._isDefinedCount() && positionSecond._isDefinedCount()) {
@@ -145,9 +153,9 @@ RopePosition.prototype.split = function(positionSecond) {
 
 	if (this._isDefinedLinesColumn() && positionSecond._isDefinedLinesColumn()) {
 		left.lines = positionSecond.lines;
-		right.lines = positionSecond.lines - this.lines + 1;
+		right.lines = this.lines - positionSecond.lines + 1;
 		left.symbolsLastLine = positionSecond.symbolsLastLine;
-		right.symbolsLastLine = this.symbolsLastLine - right.lines == 1? positionSecond.symbolsLastLine: 0;
+		right.symbolsLastLine = this.symbolsLastLine - (right.lines == 1? positionSecond.symbolsLastLine: 0);
 	}
 
 	return [left, right]
@@ -315,6 +323,30 @@ RopeNode.prototype.checkLinks = function () {
 	return true;
 }
 
+RopeNode.prototype.checkPositions = function() {
+	if (this.left)
+		this.left.checkPositions()
+	if (this.right)
+		this.right.checkPositions()
+	if (this.isLeaf()) {
+		if (!this.length.isEqual(RopePosition(this.value)))
+			throw Error("The length is wrong")
+	} else { // not a leaf
+		// FIXME: !!!
+	}
+}
+
+RopeNode.prototype.getAbsolutePosition = function(relativePosition) {
+	var curNode = this;
+	while (curNode) {
+		if (curNode.parent && !curNode.isLeftChild()) { // curNode is right child
+			relativePosition = curNode.parent.left.length.concat(relativePosition)
+		}
+		curNode = curNode.parent;
+	}
+	return relativePosition;
+}
+
 RopeNode.prototype.getDot = function(prevPath, direction) {
 	if (typeof prevPath == 'undefined')
 		prevPath = ''
@@ -337,7 +369,7 @@ RopeNode.prototype.getDot = function(prevPath, direction) {
 }
 
 /**
- * @param {int|RopePosition} indexOrPosition The symbol index as if rope contains one big string OR The position of symbol the return node must contain. This position may not define index of symbol because the search only use lines/column info
+ * @param {int|RopePosition} indexOrPosition The absolute symbol index as if rope contains one big string OR The absolute position of symbol the return node must contain. This position may not define index of symbol because the search only use lines/column info
  * @return {{node: RopeNode, position: RopePosition}} Always return RopePosition with full info
  */
 
@@ -406,10 +438,15 @@ RopeNode.prototype.recalculate = function() {
 
 
 	if (!this.isLeaf()) {
-		if (this.left)
-			this.length = this.left.length.concat(this.right.length)
-		else // only right
+		if (this.left) {
+			if (this.right)
+				this.length = this.left.length.concat(this.right.length)
+			else // only left
+				this.length = left.length
+		} else // only right
 			this.length = this.right.length;
+	} else { // is leaf
+		this.length = RopePosition(this.value)
 	}
 }
 
@@ -544,28 +581,45 @@ Rope = function(string) {
 	this.rope = new RopeNode(string)
 }
 
+Rope.prototype._getIndexFromPosition = function(indexOrPosition, defaultValue) {
+	if (!isDefined(indexOrPosition))
+		return defaultValue;
+
+	if (typeof indexOrPosition == 'number')
+		// this is index
+		return indexOrPosition;
+	var target = this.rope.getNode(indexOrPosition);
+	return target.node.getAbsolutePosition(target.position).count;
+}
+
 Rope.prototype.insert = function(startPosition, stringOrRope) {
+	var startIndex = this._getIndexFromPosition(startPosition);
 	// FIXME: determine can we add to the only one leaf or to neighbour instead of create new leaf
-	var split = this.rope.split(startPosition);
-	this.rope = split[0].append(stringOrRope).append(split[1]);
+	var split = this.rope.split(startIndex);
+	this.rope = stringOrRope.append(split[1]);
+	if (split[0])
+		this.rope = split[0].append(this.rope)
 }
 
-Rope.prototype.remove = function(startPosition, afterEndPosition) {
+Rope.prototype.remove = function(startPosition, endPosition) {
+	var startIndex = this._getIndexFromPosition(startPosition);
+	var endIndex = this._getIndexFromPosition(endPosition);
 	// FIXME: determine can we join two leafs in the break
-	var split = this.rope.split(startPosition);
-	var split2 = split[1].split(afterEndPosition - startPosition);
-	this.rope = split[0].append(split2[1]);
+	var split = this.rope.split(startIndex);
+	var split2 = split[1].split(endIndex - startIndex + 1);
+	if (split[0])
+		this.rope = split[0].append(split2[1]);
+	else {
+		if (split2[1])
+			this.rope = split2[1]
+		else
+			this.rope = RopeNode("")
+	}
 }
 
-Rope.prototype.substr = function(startPosition, afterEndPosition) {
-	if (typeof startPosition == 'undefined')
-		startPosition = 0;
-	if (typeof afterEndPosition == 'undefined')
-		afterEndPosition = this.rope.length.count + 1;
-	// FIXME: determine positions types
-
-	// FIXME: check if endPosition == startPosition
-	var endPosition = afterEndPosition - 1;
+Rope.prototype.substr = function(startPosition, endPosition) {
+	startPosition = isDefined(startPosition)? RopePosition(startPosition): 0;
+	endPosition = isDefined(endPosition)? RopePosition(endPosition): this.rope.length.count - 1;
 
 	var startNode = this.rope.getNode(startPosition);
 	var endNode = this.rope.getNode(endPosition);
