@@ -5,57 +5,157 @@
  *       (Apache v2.0 license)
  */
 
-RopeSPLIT_LENGTH = 15;
-RopeJOIN_LENGTH = 10;
+"used strict";
 
-/*RopePosition = function (rope, arguments) {
-	this.rope = rope;
-	// determine, whether we receive 1 argument (index), 2 arguments (line, count) or 3 arguments (index, line, count)
+var RopeSPLIT_LENGTH = 15;
+var RopeJOIN_LENGTH = 10;
+
+function isDefined(arg) {
+	if (typeof arg != 'undefined')
+		return true;
+	return false;
 }
 
-RopePosition.prototype.getIndex = function() {
+RopePosition = function () {
+  if (!(this instanceof RopePosition)) return new RopePosition(arguments);
 
+  if (arguments.length == 1 && typeof arguments == 'object')
+  	arguments = arguments[0];
+
+	if (arguments.length === 1) {
+		if (arguments[0] instanceof RopePosition)
+			return arguments[0]
+		else if (typeof arguments[0] == 'string')
+			return this._fromString(arguments[0])
+		else if (typeof arguments[0] == 'number')
+			return this._fromIndex(arguments[0])
+	} else if (arguments.length === 2)
+		return this._fromLineColumn(arguments[0], arguments[1]);
+	else if (arguments.length === 3)
+		return this._fromFull(arguments[0], arguments[1], arguments[2]);
 }
 
-RopePosition.prototype.getLineCount = function() {
-	return [line, count]
+
+RopePosition.prototype.concat = function (position) {
+	if (typeof position == 'undefined')
+		return this;
+	return RopePosition(
+		this.count + position.count,
+		this.lines + position.lines - 1,
+		position.symbolsLastLine + (position.lines == 1? this.symbolsLastLine: 0)
+		)
+}
+
+RopePosition.prototype.determineInfo = function(ropeLeaf) {
+	if (this._isDefinedCount()){
+		if (!this._isDefinedLinesColumn()) {
+
+			this.lines = 0;
+			this.symbolsLastLine = 0;
+
+			for (var i = 0; i < this.count; i+=1) {
+				if (ropeLeaf.value[i] == '\n') {
+					this.lines += 1;
+					this.symbolsLastLine = 0;
+				} else
+					this.symbolsLastLine += 1;
+			}
+			return;
+		}
+	} else { // count is not defined
+		if (this._isDefinedLinesColumn()) {
+			this.count = 0;
+
+			for (var iLines = 0, iSymbols = 0; (iLines < this.lines) && (iSymbols < this.symbolsLastLine); this.count += 1) {
+				if (ropeLeaf.value[i] == '\n') {
+					iLines += 1;
+					iSymbols = 0;
+				} else
+					iSymbols += 1;
+			}
+		}
+		return;
+	}
+	throw Error('Can\'t determine necassary info due to lack information')
+}
+
+RopePosition.prototype._fromFull = function(index, lines, column) {
+	var res = RopePosition();
+	res.count = index;
+	res.lines = lines;
+	res.symbolsLastLine = column;
+	return res;
+}
+
+RopePosition.prototype._fromIndex = function(index) {
+	var res = RopePosition();
+	res.count = index;
+	return res;
+}
+
+RopePosition.prototype._fromLineColumn = function(lines, column) {
+	var res = new RopePosition()
+	res.lines = lines;
+	res.symbolsLastLine = column;
+	return res;
+}
+
+RopePosition.prototype._fromString = function(string) {
+	var res = new RopePosition()
+	res.count = string.length;
+	res.lines = (string.match('/\n/g') || []).length + 1;
+	res.symbolsLastLine = string.length - (string.lastIndexOf('\n') + 1);
+	return res;
+}
+
+RopePosition.prototype._isDefinedCount = function(){
+	return isDefined(this.count);
+}
+
+RopePosition.prototype._isDefinedLinesColumn = function(){
+	return isDefined(this.lines) && isDefined(this.symbolsLastLine);
 }
 
 RopePosition.prototype.isLess = function(position) {
+	if (this._isDefinedCount() && position._isDefinedCount()) {
+		return this.count < position.count;
+	}
 
+	if (this._isDefinedLinesColumn() && position._isDefinedLinesColumn()) {
+		return this.lines < position.lines? true:
+						 this.lines == position.lines? this.symbolsLastLine < position.symbolsLastLine: false;
+	}
+
+	throw Error("RopePosition's don't contain the appropriate info")
 }
 
-RopePosition.prototype.isEqual = function(position) {
+/*RopePosition.prototype.isEqual = function(position) {
 
 }
 
 RopePosition.prototype.isLessOrEqual = function(position) {
 	return this.isLess(position) || this.isEqual(position);
-}
-
-RopePosition.prototype.extend = function (position) {
-
-}
-
-RopePosition.prototype.split = function (position) {
-	return [first, second]
 }*/
-
-ropePositionConcat = function(position1, position2) {
-	return {
-		'count': position1.count + position2.count,
-		'lines': position1.lines + position2.lines - 1,
-		'symbolsLastLine': position2.symbolsLastLine + (position2.lines == 1? position1.symbolsLastLine: 0),
+RopePosition.prototype.split = function(positionSecond) {
+	var left = RopePosition(), right = RopePosition();
+	if (this._isDefinedCount() && positionSecond._isDefinedCount()) {
+		left.count = positionSecond.count;
+		right.count = this.count - positionSecond.count;
 	}
+
+	if (this._isDefinedLinesColumn() && positionSecond._isDefinedLinesColumn()) {
+		left.lines = positionSecond.lines;
+		right.lines = positionSecond.lines - this.lines + 1;
+		left.symbolsLastLine = positionSecond.symbolsLastLine;
+		right.symbolsLastLine = this.symbolsLastLine - right.lines == 1? positionSecond.symbolsLastLine: 0;
+	}
+
+	return [left, right]
 }
 
-getRopePositionFromString = function(string) {
-	return {
-		'count': string.length,
-		'lines': (string.match('/\n/g') || []).length + 1,
-		'symbolsLastLine': string.length - (string.lastIndexOf('\n') + 1),
-	}
-}
+///////////////////////////////////////////////////////////////////////////////////////////
+////////////                     RopeNode                                      ////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 
 RopeNode = function(string) {
 	// allow usage without `new`
@@ -64,7 +164,7 @@ RopeNode = function(string) {
   this.height = 1;
   if (string) {
 	  this.value = string;
-	  this.length = getRopePositionFromString(string);
+	  this.length = RopePosition(string);
 	  adjust.call(this);
 	}
 }
@@ -237,24 +337,28 @@ RopeNode.prototype.getDot = function(prevPath, direction) {
 }
 
 /**
- * Position is symbol index
+ * @param {int|RopePosition} indexOrPosition The symbol index as if rope contains one big string OR The position of symbol the return node must contain. This position may not define index of symbol because the search only use lines/column info
+ * @return {{node: RopeNode, position: RopePosition}} Always return RopePosition with full info
  */
 
-RopeNode.prototype.getNode = function(position) {
+RopeNode.prototype.getNode = function(indexOrPosition) {
+	var position = RopePosition(indexOrPosition);
 	var curNode = this;
 	
 	// find the node to start from
 	while (!curNode.isLeaf()) {
-		if (curNode.left && (position < curNode.left.length.count))
+		if (curNode.left && position.isLess(curNode.left.length))
 			curNode = curNode.left;
 		else {
-			position -= curNode.left.length.count;
+			position = position.split(curNode.left.length)[1];
 			curNode = curNode.right;
 		}
 	}
 
-	return {'node': curNode, 'index': position}
+	position.determineInfo(curNode);
+	return {'node': curNode, 'position': position}
 }
+
 
 RopeNode.prototype.isLeaf = function() {
 	return typeof this.value != 'undefined';
@@ -278,7 +382,7 @@ RopeNode.prototype.isLeftChild = function() {
  * @private
  */
 RopeNode.prototype.leftRotate = function(node) {
-  	// Re-assign parent-child references for the parent of the node being removed
+  // Re-assign parent-child references for the parent of the node being removed
 	if (node.parent) {
 		if (node.isLeftChild())
 			node.parent.setLeft(node.right);
@@ -302,12 +406,9 @@ RopeNode.prototype.recalculate = function() {
 
 
 	if (!this.isLeaf()) {
-		if (this.left) {
-			if (this.right)
-				this.length = ropePositionConcat(this.left.length, this.right.length)
-			else
-				this.length = this.left.length 
-		} else // only right
+		if (this.left)
+			this.length = this.left.length.concat(this.right.length)
+		else // only right
 			this.length = this.right.length;
 	}
 }
@@ -347,27 +448,27 @@ RopeNode.prototype.setRight = function(ropeNode) {
 }
 
 /**
- * @param positionSecond The number of index, the second rope will be started from
+ * @param {int} indexSecond The absolute index of symbol, the second rope will be started from
  */
 
-RopeNode.prototype.split = function(positionSecond) {
-	if (positionSecond < 0 || !(positionSecond < this.length.count))
-		throw RangeError('positionSecond is not within rope bounds')
+RopeNode.prototype.split = function(indexSecond) {
+	if (indexSecond < 0 || !(indexSecond < this.length.count))
+		throw RangeError('indexSecond is not within rope bounds')
 	
 	var left, right, res
 
 	if (this.isLeaf()) {
-		left = this.value.substr(0, positionSecond);
+		left = this.value.substr(0, indexSecond);
 		left = left == ''? null: RopeNode(left);
-		right = this.value.substr(positionSecond);
+		right = this.value.substr(indexSecond);
 		right = right == ''? null: RopeNode(right);
 		return [left, right]
 	}
 
-	if (this.left && (positionSecond < this.left.length.count)) { // go left
+	if (this.left && (indexSecond < this.left.length.count)) { // go left
 		right = this.right;
 		this.unsetRight();
-		res = this.left.split(positionSecond);
+		res = this.left.split(indexSecond);
 		left = res[0]
 		if (res[1])
 			right = res[1].append(right);
@@ -376,7 +477,7 @@ RopeNode.prototype.split = function(positionSecond) {
 	} else { // else go_right
 		left = this.left;
 		this.unsetLeft();
-		res = this.right.split(positionSecond - left.length.count);
+		res = this.right.split(indexSecond - left.length.count);
 		if (left)
 			left = left.append(res[0])
 		else
@@ -433,6 +534,10 @@ RopeNode.prototype.unsetRight = function() {
 	this.right = null;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////
+////////////                     Rope                                          ////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
 Rope = function(string) {
 	if (!(this instanceof Rope)) return new Rope(string);
 
@@ -440,7 +545,7 @@ Rope = function(string) {
 }
 
 Rope.prototype.insert = function(startPosition, stringOrRope) {
-	// FIXME: determine can we add to the only one leaf or to neighbour
+	// FIXME: determine can we add to the only one leaf or to neighbour instead of create new leaf
 	var split = this.rope.split(startPosition);
 	this.rope = split[0].append(stringOrRope).append(split[1]);
 }
@@ -466,10 +571,10 @@ Rope.prototype.substr = function(startPosition, afterEndPosition) {
 	var endNode = this.rope.getNode(endPosition);
 
 	if (startNode.node === endNode.node)
-		return startNode.node.value.substring(startNode.index, endNode.index + 1)
+		return startNode.node.value.substring(startNode.position.count, endNode.position.count + 1)
 	
 	var str = new Array();
-	str.push(startNode.node.value.substring(startNode.index));
+	str.push(startNode.node.value.substring(startNode.position.count));
 
 	var prevNode = startNode.node;
 	var curNode = startNode.node.parent;
@@ -488,7 +593,7 @@ Rope.prototype.substr = function(startPosition, afterEndPosition) {
 			prevNode = temp;
 		}
 	}
-	str.push(curNode.value.substring(0, endNode.index + 1))
+	str.push(curNode.value.substring(0, endNode.position.count + 1))
 
 	return str.join('')
 }
