@@ -103,7 +103,7 @@ RopePosition.prototype._fromLineColumn = function(lines, column) {
 RopePosition.prototype._fromString = function(string) {
 	var res = new RopePosition()
 	res.count = string.length;
-	res.lines = (string.match('/\n/g') || []).length + 1;
+	res.lines = (string.match(/\n/g) || []).length + 1;
 	res.symbolsLastLine = string.length - (string.lastIndexOf('\n') + 1);
 	return res;
 }
