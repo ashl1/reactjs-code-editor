@@ -442,7 +442,7 @@ RopeNode.prototype.recalculate = function() {
 			if (this.right)
 				this.length = this.left.length.concat(this.right.length)
 			else // only left
-				this.length = left.length
+				this.length = this.left.length
 		} else // only right
 			this.length = this.right.length;
 	} else { // is leaf
