@@ -59,15 +59,16 @@ var Editor = React.createClass({displayName: "Editor",
   render: function() {
     
     var content = [];
+    var text;
     for (var iLine = this.state.firstLinePos; iLine < this.state.firstLinePos + this.props.linesVisible; iLine += 1) {
-      content.push(
-        React.createElement("div", null, React.createElement("pre", null, 
-        
-          this.props.text.substr(
+      text = this.props.text.substr(
             RopePosition(iLine, this.state.firstColumnPos),
             RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible)
           )
-        ))
+      if (text == "")
+        text = " ";
+      content.push(
+        React.createElement("div", null, React.createElement("pre", null, text))
       )
     }
     
