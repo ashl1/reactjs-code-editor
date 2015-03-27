@@ -6,6 +6,8 @@ var onChange = function(){
 
 React.render(
   <Editor 
+    linesVisible = {10}
+    columnsVisible = {15}
     text = {r}
     onChange = {onChange}
   />, document.body
