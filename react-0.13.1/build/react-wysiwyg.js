@@ -1,8 +1,9 @@
-//var selectionRange = require('selection-range');
 
-/**
- * Make a contenteditable element
- */
+function isDefined(arg) {
+  if (typeof arg != 'undefined')
+    return true;
+  return false;
+}
 
 var Editor = React.createClass({displayName: "Editor",
 
@@ -68,7 +69,7 @@ var Editor = React.createClass({displayName: "Editor",
       if (text == "")
         text = " ";
       content.push(
-        React.createElement("div", null, React.createElement("pre", null, text))
+        React.createElement("div", {className: "codeLine"}, React.createElement("pre", null, text))
       )
     }
     
@@ -134,21 +135,31 @@ var Editor = React.createClass({displayName: "Editor",
       if (this._previousLineExist())
         this._moveCursorUp()
       else // prev line does not exist
-        this._moveCursorToLineStart(this.state.virtualCursor.line)
+        this._moveCursorToLineStart(cursorReal.line)
 
     } else if (key == 'ArrowDown') {
       if (this._nextLineExist())
         this._moveCursorDown()
       else // next line does not exist
-        this._moveCursorToLineEnd(this.state.virtualCursor.line)
+        this._moveCursorToLineEnd(cursorReal.line)
       
     } else if (key == 'Home') {
-      
+      this._moveCursorToLineStart(cursorReal.line)
+
     } else if (key == 'End') {
-      
+      this._moveCursorToLineEnd(cursorReal.line)
+
     } else if (key == 'PageUp') {
-      
+      if (this._previousLineExist())
+        this._moveCursorUp(this.props.linesVisible)
+      else
+        this._moveCursorToLineStart(cursorReal.line)
+
     } else if (key == 'PageDown') {
+      if (this._nextLineExist())
+        this._moveCursorDown(this.props.linesVisible)
+      else
+        this._moveCursorToLineEnd(cursorReal.line)
       
     } else if (key == 'Backspace') {
       
@@ -207,8 +218,9 @@ var Editor = React.createClass({displayName: "Editor",
     }
   },
   
-  _moveCursorDown: function() {
-    var nextLine = this.state.virtualCursor.line + 1;
+  _moveCursorDown: function(lines) {
+    if (!isDefined(lines)) lines = 1;
+    var nextLine = Math.min(this.state.virtualCursor.line + lines, this.props.text.getLinesCount());
     var toRight = this._getCursorOnRealLine().column <= this.props.text.getLineLength(nextLine);
     this.state.virtualCursor.line = nextLine;
     this._updateShowBuffer({toUp: 0, toRight: toRight})
@@ -238,8 +250,9 @@ var Editor = React.createClass({displayName: "Editor",
     this._updateShowBuffer({toUp: toUp, toRight: 0})
   },
   
-  _moveCursorUp: function () {
-    var previousLine = this.state.virtualCursor.line - 1;
+  _moveCursorUp: function (lines) {
+    if (!isDefined(lines)) lines = 1;
+    var previousLine = Math.max(this.state.virtualCursor.line - lines, 1);
     var toRight = this._getCursorOnRealLine().column <= this.props.text.getLineLength(previousLine);
     this.state.virtualCursor.line = previousLine;
     this._updateShowBuffer({toUp: 1, toRight: toRight})
