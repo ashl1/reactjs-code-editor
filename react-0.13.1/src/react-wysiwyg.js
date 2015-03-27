@@ -112,9 +112,10 @@ var Editor = React.createClass({
     
     // FIXME: Reset virtual cursor to real cursor () while change text or changes by mouse
     
-    // movements
-    if (key == 'ArrowLeft') {
+    if (! (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown'))
       this.state.virtualCursor = cursorReal;
+    
+    if (key == 'ArrowLeft') {
       if (this._cursorOnLineStart()) {
         if (this._previousLineExist())
           this._moveCursorToLineEnd(cursorReal.line - 1)
@@ -128,27 +129,32 @@ var Editor = React.createClass({
           this._moveCursorToLineStart(cursorReal.line + 1)
       } else // not on real line end
         this._moveCursorRight()
+
     } else if (key == 'ArrowUp') {
-      if (this._previousLineExist()) {
+      if (this._previousLineExist())
         this._moveCursorUp()
-      } else { // prev line does not exist
+      else // prev line does not exist
         this._moveCursorToLineStart(this.state.virtualCursor.line)
-      }
+
     } else if (key == 'ArrowDown') {
-      if (this._nextLineExist()) {
+      if (this._nextLineExist())
         this._moveCursorDown()
-      } else { // next line does not exist
+      else // next line does not exist
         this._moveCursorToLineEnd(this.state.virtualCursor.line)
-      }
-      // this._updateShowBuffer
+      
+    } else if (key == 'Home') {
+      
+    } else if (key == 'End') {
+      
+    } else if (key == 'PageUp') {
+      
+    } else if (key == 'PageDown') {
+      
     } else if (key == 'Backspace') {
-      this.state.virtualCursor = cursorReal;
       
     } else if (key == 'Delete') {
-      this.state.virtualCursor = cursorReal;
       
     } else if (key == 'Tab') {
-      this.state.virtualCursor = cursorReal;
       
     }
     
