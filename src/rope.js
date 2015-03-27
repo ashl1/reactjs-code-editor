@@ -71,10 +71,10 @@ RopePosition.prototype.determineInfo = function(ropeLeaf) {
 		if (this._isDefinedLinesColumn()) {
 			this.count = 0;
 
-			for (var iLines = 1, iSymbols = 1; (iLines < this.lines) || ((iLines === this.lines) && (iSymbols < this.symbolsLastLine)); this.count += 1) {
+			for (var iLines = 1, iSymbols = 0; (iLines < this.lines) || ((iLines === this.lines) && (iSymbols < this.symbolsLastLine)); this.count += 1) {
 				if (ropeLeaf.value[this.count] == '\n') {
 					iLines += 1;
-					iSymbols = 1;
+					iSymbols = 0;
 				} else
 					iSymbols += 1;
 			}
@@ -621,6 +621,10 @@ Rope.prototype.getLineLength = function (lineIndex) {
   else
     endIndex = this._getIndexFromPosition(RopePosition(lineIndex + 1, 0)) - 1;
   return endIndex - startIndex + 1;
+}
+
+Rope.prototype.getLinesCount = function () {
+  return this.rope.length.lines;
 }
 
 Rope.prototype.insert = function(startPosition, stringOrRope) {
