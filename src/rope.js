@@ -617,7 +617,7 @@ Rope.prototype.getLineLength = function (lineIndex) {
   var startIndex = this._getIndexFromPosition(RopePosition(lineIndex, 0));
   var endIndex;
   if (lineIndex == this.rope.length.lines)
-    endIndex = this.rope.length;
+    endIndex = this.rope.length.count;
   else
     endIndex = this._getIndexFromPosition(RopePosition(lineIndex + 1, 0)) - 1;
   return endIndex - startIndex + 1;

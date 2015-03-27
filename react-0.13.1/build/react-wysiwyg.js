@@ -284,7 +284,7 @@ var Editor = React.createClass({displayName: "Editor",
       if (args.toUp)
         this.state.firstLinePos = cursor.line
       else // toDown
-        this.state.firstLinePos = Math.max(cursor.line - this.props.linesVisible, 0)
+        this.state.firstLinePos = Math.max(cursor.line - this.props.linesVisible + 1, 0)
       needUpdate = true;
     }
     
