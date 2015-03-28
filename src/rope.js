@@ -16,6 +16,11 @@ function isDefined(arg) {
 	return false;
 }
 
+/*
+ * This structure used as (line, column) for external usage, and (lines, symbolsLastLine) in internal
+ * usage for the Rope. The meaning of symbolsLastLine depend on circumstances it's used.
+ */
+
 RopePosition = function () {
   if (!(this instanceof RopePosition)) return new RopePosition(arguments);
 
@@ -592,6 +597,32 @@ Rope.prototype._getIndexFromPosition = function(indexOrPosition, defaultValue) {
 	return target.node.getAbsolutePosition(target.position).count;
 }
 
+// ASSUME: position has 'line' and 'symbolsLastLine' (column) properties
+
+Rope.prototype._isPositionInBounds = function(position) {
+  if (position instanceof RopePosition)
+    return  (position.lines <= this.rope.length.lines) && (position.symbolsLastLine <= this.getLineLength(position.lines))
+  // assume position is index [number]
+  return position >= 0 && position <= this.rope.length.count;
+}
+
+/**
+ * @return {int} Count of the symbols in the line (without last newline)
+ */
+
+Rope.prototype.getLineLength = function (lineIndex) {
+  if (lineIndex > this.rope.length.lines)
+    return 0;
+  
+  var startIndex = this._getIndexFromPosition(RopePosition(lineIndex, 0));
+  var endIndex;
+  if (lineIndex == this.rope.length.lines)
+    endIndex = this.rope.length;
+  else
+    endIndex = this._getIndexFromPosition(RopePosition(lineIndex + 1, 0)) - 1;
+  return endIndex - startIndex + 1;
+}
+
 Rope.prototype.insert = function(startPosition, stringOrRope) {
 	var startIndex = this._getIndexFromPosition(startPosition);
 	// FIXME: determine can we add to the only one leaf or to neighbour instead of create new leaf
@@ -618,9 +649,20 @@ Rope.prototype.remove = function(startPosition, endPosition) {
 }
 
 Rope.prototype.substr = function(startPosition, endPosition) {
-	startPosition = isDefined(startPosition)? RopePosition(startPosition): 0;
-	endPosition = isDefined(endPosition)? RopePosition(endPosition): this.rope.length.count - 1;
+	startPosition = isDefined(startPosition)? startPosition: 0;
+	endPosition = isDefined(endPosition)? endPosition: this.rope.length.count - 1;
 
+  // ASSUME: startPosition and endPosition are on the same line and endPosition >= startPosition.
+  //   In other case, the logic of determine if position not in bounds will be wrong
+  if (!this._isPositionInBounds(startPosition))
+    return "";
+  else { // has first symbols
+    if (!this._isPositionInBounds(endPosition))
+      endPosition = endPosition instanceof RopePosition?
+        RopePosition(endPosition.lines, this.getLineLength(endPosition.lines) - 1):
+        this.rope.length.count - 1;
+  }
+  
 	var startNode = this.rope.getNode(startPosition);
 	var endNode = this.rope.getNode(endPosition);
 
