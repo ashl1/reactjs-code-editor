@@ -693,7 +693,7 @@ Rope.prototype.substr = function(startPosition, endPosition) {
 			prevNode = temp;
 		}
 	}
-	str.push(curNode.value.substring(0, endNode.position.count + 1))
+	str.push(curNode.value.substring(0, endNode.position.count))
 
 	return str.join('')
 }

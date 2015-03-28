@@ -447,7 +447,7 @@ RopeNode.prototype.recalculate = function() {
 			if (this.right)
 				this.length = this.left.length.concat(this.right.length)
 			else // only left
-				this.length = this.left.length
+				this.length = left.length
 		} else // only right
 			this.length = this.right.length;
 	} else { // is leaf
@@ -693,7 +693,7 @@ Rope.prototype.substr = function(startPosition, endPosition) {
 			prevNode = temp;
 		}
 	}
-	str.push(curNode.value.substring(0, endNode.position.count + 1))
+	str.push(curNode.value.substring(0, endNode.position.count))
 
 	return str.join('')
 }

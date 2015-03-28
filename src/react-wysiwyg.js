@@ -67,7 +67,7 @@ var Editor = React.createClass({
     for (var iLine = this.state.firstLinePos; iLine < this.state.firstLinePos + this.props.linesVisible; iLine += 1) {
       text = this.props.text.substr(
             RopePosition(iLine, this.state.firstColumnPos),
-            RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible)
+            RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible - 1)
           )
       if (text == "")
         text = " ";
