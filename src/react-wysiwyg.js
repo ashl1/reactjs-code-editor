@@ -92,6 +92,11 @@ var Editor = React.createClass({
         {content}
       </div>
     )
+    /*
+        <div>{this.state.virtualCursor.line} - {this.state.virtualCursor.column}/{this.state.firstColumnPos}</div>
+      </div>
+    )
+     */
   },
 
   onMouseDown: function(e) {
@@ -114,6 +119,7 @@ var Editor = React.createClass({
   onKeyPress: function(e){
     var key = e.key;
     var cursorReal = this._getCursorOnRealLine();
+    this.state.keyEvent = e;
     
     // FIXME: Reset virtual cursor to real cursor () while change text or changes by mouse
     
@@ -128,7 +134,6 @@ var Editor = React.createClass({
         this._moveCursorLeft()
       
     } else if (key == 'ArrowRight') {
-      this.state.virtualCursor = cursorReal;
       if (this._cursorOnLineEnd()) {
         if (this._nextLineExist())
           this._moveCursorToLineStart(cursorReal.line + 1)
@@ -173,14 +178,8 @@ var Editor = React.createClass({
       
     }
     
-    /*var val = e.target.textContent;
-
-    // max-length validation on the fly
-    if (this.props.maxLength && (val.length > this.props.maxLength)) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }*/
+    // For DEBUG purposes
+    //this.forceUpdate()
   },
 
   onKeyUp: function(e) {
@@ -369,8 +368,12 @@ var Editor = React.createClass({
         this.state.firstColumnPos = cursor.column
       needUpdate = true;
     }
-    if (needUpdate)
+    if (needUpdate) {
+      // prevent default action to stop additional (native) caret movement
+      this.state.keyEvent.preventDefault();
+      this.state.keyEvent.stopPropagation();
       this.forceUpdate();
+    }
   },
 });
 
