@@ -34,7 +34,9 @@ var Editor = React.createClass({
     return {
       firstLinePos: 1,
       firstColumnPos: 0,
-      virtualCursor: {line: 1, column: 0}
+      virtualCursor: {line: 1, column: 0},
+      keyEvent: null,
+      cursorHandled: false,
     };
   },
 
@@ -78,11 +80,13 @@ var Editor = React.createClass({
     }
     
     return (
+      <div>
       <div
         tabIndex = {this.props.autoFocus ? -1 : 0}
         contentEditable = {true}
         onPaste = {this.onPaste}
         onMouseDown = {this.onMouseDown}
+        onSelect = {this.onSelect}
         onTouchStart = {this.onMouseDown}
         onKeyDown = {this.onKeyPress}
         onKeyPress = {this.onKeyPress}
@@ -91,18 +95,32 @@ var Editor = React.createClass({
       >
         {content}
       </div>
-    )
-    /*
         <div>{this.state.virtualCursor.line} - {this.state.virtualCursor.column}/{this.state.firstColumnPos}</div>
       </div>
     )
-     */
   },
 
   onMouseDown: function(e) {
-    /*if (this.props.text.length) return;
-    this.setCursorToStart();
-    e.preventDefault();*/
+    
+  },
+  
+  onSelect: function(e) {
+    // 1. Determine the line when cursor caret is located
+    // 2. Determine real string column
+    // 3. Update the virtual cursor
+    
+    if (this.state.cursorHandled) {
+      // handle manually by other methods
+      this.state.cursorHandled = false;
+      return;
+    }
+    
+    var lineNode = this._getLineNodeFromNestedNode(rangy.getSelection().getRangeAt(0).startContainer);
+    this.state.virtualCursor.line = this._extractLineNumber(lineNode);
+    this.state.virtualCursor.column = this._getRealCursorColumnFromRelative(this._getCursorPosition(lineNode));
+    
+    // For DEBUG
+    this.forceUpdate();
   },
 
   onPaste: function(e){
@@ -213,6 +231,10 @@ var Editor = React.createClass({
     return this.state.virtualCursor.column === 0;
   },
   
+  _extractLineNumber: function(node) {
+    return Number(node.dataset.reactid.split('$')[1].split('_')[1]);
+  },
+  
   _getCursorOnRealLine: function() {
     var line = this.state.virtualCursor.line;
     return {
@@ -221,7 +243,18 @@ var Editor = React.createClass({
     }
   },
   
+  _getLineNodeFromNestedNode: function(node) {
+    while (!node.classList || !node.classList.length || node.classList[0] != 'codeLine')
+      node = node.parentNode;
+    return node
+  },
+  
+  _getRealCursorColumnFromRelative: function(relativeColumn) {
+    return this.state.firstColumnPos + relativeColumn;
+  },
+  
   _moveCursorDown: function(lines) {
+    this.state.cursorHandled = true;
     if (!isDefined(lines)) lines = 1;
     var nextLine = Math.min(this.state.virtualCursor.line + lines, this.props.text.getLinesCount());
     var toRight = this._getCursorOnRealLine().column <= this.props.text.getLineLength(nextLine);
@@ -230,16 +263,19 @@ var Editor = React.createClass({
   },
   
   _moveCursorLeft: function() {
+    this.state.cursorHandled = true;
     this.state.virtualCursor.column -= 1;
     this._updateShowBuffer({toUp: 1, toRight: 0});
   },
   
   _moveCursorRight: function() {
+    this.state.cursorHandled = true;
     this.state.virtualCursor.column += 1;
     this._updateShowBuffer({toUp: 0, toRight: 1});
   },
   
   _moveCursorToLineEnd: function(line) {
+    this.state.cursorHandled = true;
     var toUp = this.state.virtualCursor.line > line;
     var length = this.props.text.getLineLength(line)
     var toRight = this.state.virtualCursor.column < length
@@ -248,12 +284,14 @@ var Editor = React.createClass({
   },
   
   _moveCursorToLineStart: function(line) {
+    this.state.cursorHandled = true;
     var toUp = this.state.virtualCursor.line > line;
     this.state.virtualCursor = {line: line, column: 0};
     this._updateShowBuffer({toUp: toUp, toRight: 0})
   },
   
   _moveCursorUp: function (lines) {
+    this.state.cursorHandled = true;
     if (!isDefined(lines)) lines = 1;
     var previousLine = Math.max(this.state.virtualCursor.line - lines, 1);
     var toRight = this._getCursorOnRealLine().column <= this.props.text.getLineLength(previousLine);
