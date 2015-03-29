@@ -1,1 +1,4 @@
+bower_components/
+build/editor.js
+build/react-wysiwyg.js
 .module-cache
