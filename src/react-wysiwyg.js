@@ -203,26 +203,21 @@ var Editor = React.createClass({
         this.props.text.remove(symbolPosition, symbolPosition);
         this._moveCursorLeft();
       }
-      if (this._isLinesRightSideNotShown(this.state.virtualCursor.line)) {
-        this._preventDefaultEventAction(e)
-        this.forceUpdate();
-      }
+      this._preventDefaultEventAction(e)
+      this.forceUpdate();
 
     } else if (key == 'Delete') {
       if (this._cursorOnLineEnd()) {
         if (this._nextLineExist()) {
           var symbolPosition = RopePosition(cursorReal.line, this.props.text.getLineLength(cursorReal.line))
           this.props.text.remove(symbolPosition, symbolPosition);
-          this.forceUpdate();
         }
       } else { // not on real line end
         var symbolPosition = RopePosition(cursorReal.line, cursorReal.column);
         this.props.text.remove(symbolPosition, symbolPosition);
       }
-      if (this._isLinesRightSideNotShown(this.state.virtualCursor.line)) {
-        this._preventDefaultEventAction(e)
-        this.forceUpdate();
-      }      
+      this._preventDefaultEventAction(e)
+      this.forceUpdate();
 
     } else if (key == 'Tab') {
       
@@ -287,10 +282,6 @@ var Editor = React.createClass({
     return this.state.firstColumnPos + relativeColumn;
   },
   
-  _isLinesRightSideNotShown: function(line) {
-    return this.props.text.getLineLength(line) >= this.state.firstColumnPos + this.props.columnsVisible;
-  },
-
   _moveCursorDown: function(lines) {
     this.state.cursorHandled = true;
     if (!isDefined(lines)) lines = 1;
