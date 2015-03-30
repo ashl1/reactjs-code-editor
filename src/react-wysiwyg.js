@@ -161,7 +161,7 @@ var Editor = React.createClass({
         this._moveCursorUp()
       else // prev line does not exist
         this._moveCursorToLineStart(cursorReal.line)
-
+        
     } else if (key == 'ArrowDown') {
       if (this._nextLineExist())
         this._moveCursorDown()
@@ -220,6 +220,14 @@ var Editor = React.createClass({
     } else if (key == 'Tab') {
       
     }
+
+    if (!this.state.cursorHandled && (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown')) {
+      // show cursor at end of line if virtual cursor > line length
+      this._preventDefaultEventAction(e)
+      this._showCursor();
+    }
+
+    
   },
   
   onKeyPress: function(e){
@@ -410,7 +418,7 @@ var Editor = React.createClass({
     // 2.b Find the nested <span> tag belongs to the relative position in the line
     // 3. Set cursor to the specified selection
 
-    var relativeColumn = this.state.virtualCursor.column - this.state.firstColumnPos;
+    var relativeColumn = Math.min(this.state.virtualCursor.column, this.props.text.getLineLength(this.state.virtualCursor.line)) - this.state.firstColumnPos;
     var node = React.findDOMNode(this.refs['codeLine_' + this.state.virtualCursor.line]);
 
     node.focus();
