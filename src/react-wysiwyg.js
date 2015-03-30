@@ -88,7 +88,7 @@ var Editor = React.createClass({
         onMouseDown = {this.onMouseDown}
         onSelect = {this.onSelect}
         onTouchStart = {this.onMouseDown}
-        onKeyDown = {this.onKeyPress}
+        onKeyDown = {this.onKeyDown}
         onKeyPress = {this.onKeyPress}
         onInput = {this.onInput}
         onKeyUp = {this.onKeyUp}
@@ -134,12 +134,10 @@ var Editor = React.createClass({
     this.setText(data);
   },
 
-  onKeyPress: function(e){
+  onKeyDown: function(e) {
     var key = e.key;
     var cursorReal = this._getCursorOnRealLine();
     this.state.keyEvent = e;
-    
-    // FIXME: Reset virtual cursor to real cursor () while change text or changes by mouse
     
     if (! (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown'))
       this.state.virtualCursor = cursorReal;
@@ -221,12 +219,20 @@ var Editor = React.createClass({
 
     } else if (key == 'Tab') {
       
-    } else { // write symbol key
-
     }
-    
-    // For DEBUG purposes
-    //this.forceUpdate()
+  },
+  
+  onKeyPress: function(e){
+    console.log('pressed')
+  
+    var key = e.key;
+    var cursorReal = this._getCursorOnRealLine();
+    this.state.keyEvent = e;
+
+    this.props.text.insert(RopePosition(cursorReal.line, cursorReal.column), key)
+    this._moveCursorRight();
+    this._preventDefaultEventAction(e)
+    this.forceUpdate();
   },
 
   onKeyUp: function(e) {
