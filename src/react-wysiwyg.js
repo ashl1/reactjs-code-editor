@@ -11,6 +11,18 @@ function isDefined(arg) {
   return false;
 }
 
+var LexerDomainClassname = {
+  1: "operators", //(60-81, 87, 93-105)
+  2: "constants", //(49-58)
+  3: "string", //(59)
+  4: "keywords", //(3-47)
+  5: "comments", //(1,2)
+  6: "variable_name", //(48)
+  7: "other", //(82-86, 88-92)
+  8: "whitespace", //(106)
+  9: "invalid", //(107)
+}
+
 var Editor = React.createClass({
 
   propTypes: {
@@ -66,17 +78,25 @@ var Editor = React.createClass({
 
   render: function() {
     var content = [];
-    var id, text;
+    var id, lexems, codeLine;
     for (var iLine = this.state.firstLinePos; iLine < this.state.firstLinePos + this.props.linesVisible; iLine += 1) {
-      text = this.props.text.substr(
+      codeLine = [];
+      lexems = this.props.text.getLexems(
             RopePosition(iLine, this.state.firstColumnPos),
-            RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible - 1)
+            RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible)
           )
-      if (text == "")
-        text = " ";
+      
+      // assume at least one (newline symbol) is presented
+      for (var i = 0; i < lexems.length; i += 1) {
+        codeLine.push(
+          <span className={LexerDomainClassname[lexems[i].domain]}>{lexems[i].string}</span>
+        )
+      }
+      if (lexems.length == 0)
+        codeLine = " ";
       id = 'codeLine_' + iLine;
       content.push(
-        <div className={"codeLine"} key={id} ref={id}><pre>{text}</pre></div>
+        <div className={"codeLine"} key={id} ref={id}><pre>{codeLine}</pre></div>
       )
     }
     

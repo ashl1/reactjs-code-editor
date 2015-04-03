@@ -1,3 +1,39 @@
 .codeLine pre {
 	margin: 0;
 }
+
+.operators {
+  color: black;
+}
+.constants {
+  color: black;
+}
+
+.string {
+  color: red;
+}
+
+.keywords {
+  color: blue;
+}
+
+.comments {
+  color: gray;
+}
+
+.variable_name {
+  color: black;
+  
+}
+
+.other {
+  color: black;
+}
+
+.whitespace {
+  
+}
+
+.invalid {
+  color: red;
+}
