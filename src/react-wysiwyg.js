@@ -90,8 +90,6 @@ var Editor = React.createClass({
         onTouchStart = {this.onMouseDown}
         onKeyDown = {this.onKeyDown}
         onKeyPress = {this.onKeyPress}
-        onInput = {this.onInput}
-        onKeyUp = {this.onKeyUp}
       >
         {content}
       </div>
@@ -231,39 +229,20 @@ var Editor = React.createClass({
   },
   
   onKeyPress: function(e){
-    console.log('pressed')
-  
     var key = e.key;
     var cursorReal = this._getCursorOnRealLine();
     this.state.keyEvent = e;
 
+    if (key == 'Enter')
+      key = "\n";
+    
     this.props.text.insert(RopePosition(cursorReal.line, cursorReal.column), key)
-    this._moveCursorRight();
+    if (key == "\n")
+      this._moveCursorToLineStart(cursorReal.line + 1);
+    else
+      this._moveCursorRight();
     this._preventDefaultEventAction(e)
     this.forceUpdate();
-  },
-
-  onKeyUp: function(e) {
-    /*var stop = this._stop;
-    this._stop = false;
-    
-    // This is a lame hack to support IE, which doesn't
-    // support the 'input' event on contenteditable. Definitely
-    // not ideal, but it seems to work for now.
-    if (!stop && !this._ignoreKeyup) {
-      this.setText(e.target.textContent);
-    }*/
-  },
-
-  onInput: function(e) {
-    /*this._ignoreKeyup = true;
-    this.setText(e.target.textContent);*/
-  },
-
-  setText: function(val) {
-    /*var range = selectionRange(this.getDOMNode());
-    this.setState({ range : range });
-    this.props.onChange(val);*/
   },
   
   _cursorOnLineEnd: function() {
