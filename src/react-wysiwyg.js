@@ -55,6 +55,8 @@ var Editor = React.createClass({
     // 2.b Find the nested <span> tag belongs to the relative position in the line
     // 3. Set cursor to the specified selection
     this._showCursor();
+    
+    this.state.willBeRerendered = false;
   },
 
   autofocus: function(){
@@ -63,7 +65,6 @@ var Editor = React.createClass({
   },
 
   render: function() {
-    
     var content = [];
     var id, text;
     for (var iLine = this.state.firstLinePos; iLine < this.state.firstLinePos + this.props.linesVisible; iLine += 1) {
@@ -219,7 +220,7 @@ var Editor = React.createClass({
       
     }
 
-    if (!this.state.cursorHandled && (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown')) {
+    if (!this.state.willBeRerendered && (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown')) {
       // show cursor at end of line if virtual cursor > line length
       this._preventDefaultEventAction(e)
       this._showCursor();
@@ -435,6 +436,7 @@ var Editor = React.createClass({
     }
     if (needUpdate) {
       // prevent default action to stop additional (native) caret movement
+      this.state.willBeRerendered = true;
       this._preventDefaultEventAction(this.state.keyEvent);
       this.forceUpdate();
     }
