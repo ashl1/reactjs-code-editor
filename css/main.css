@@ -37,3 +37,7 @@
 .invalid {
   color: red;
 }
+
+.preprocessor {
+  color: gray;
+}

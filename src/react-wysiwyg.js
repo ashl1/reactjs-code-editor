@@ -12,15 +12,16 @@ function isDefined(arg) {
 }
 
 var LexerDomainClassname = {
-  1: "operators", //(60-81, 87, 93-105)
-  2: "constants", //(49-58)
-  3: "string", //(59)
-  4: "keywords", //(3-47)
-  5: "comments", //(1,2)
-  6: "variable_name", //(48)
-  7: "other", //(82-86, 88-92)
-  8: "whitespace", //(106)
-  9: "invalid", //(107)
+  1: "operators",
+  2: "constants",
+  3: "string",
+  4: "keywords",
+  5: "comments",
+  6: "variable_name",
+  7: "other",
+  8: "whitespace",
+  9: "invalid",
+  10: "preprocessor",
 }
 
 var Editor = React.createClass({
