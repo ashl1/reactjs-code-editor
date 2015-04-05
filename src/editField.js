@@ -24,7 +24,7 @@ var LexerDomainClassname = {
   10: "preprocessor",
 }
 
-var Editor = React.createClass({
+var EditField = React.createClass({
 
   propTypes: {
     linesVisible: React.PropTypes.number,
@@ -40,6 +40,7 @@ var Editor = React.createClass({
       autoFocus: true,
       linesVisible: 40,
       columnsVisible: 80,
+      codeHighlight: true,
     };
   },
 
@@ -82,19 +83,26 @@ var Editor = React.createClass({
     var id, lexems, codeLine;
     for (var iLine = this.state.firstLinePos; iLine < this.state.firstLinePos + this.props.linesVisible; iLine += 1) {
       codeLine = [];
-      lexems = this.props.text.getLexems(
-            RopePosition(iLine, this.state.firstColumnPos),
-            RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible)
+      if (this.props.codeHighlight) {
+        lexems = this.props.text.getLexems(
+              RopePosition(iLine, this.state.firstColumnPos),
+              RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible)
+            )
+        
+        // assume at least one (newline symbol) is presented
+        for (var i = 0; i < lexems.length; i += 1) {
+          codeLine.push(
+            <span className={LexerDomainClassname[lexems[i].domain]}>{lexems[i].string}</span>
           )
-      
-      // assume at least one (newline symbol) is presented
-      for (var i = 0; i < lexems.length; i += 1) {
-        codeLine.push(
-          <span className={LexerDomainClassname[lexems[i].domain]}>{lexems[i].string}</span>
-        )
+        }
+        if (lexems.length == 0)
+          codeLine = " ";
+      } else { // don't highlight code
+        codeLine = this.props.text.substr(RopePosition(iLine, this.state.firstColumnPos),
+              RopePosition(iLine, this.state.firstColumnPos + this.props.columnsVisible - 1))
+        if (codeLine === "")
+          codeLine = " ";
       }
-      if (lexems.length == 0)
-        codeLine = " ";
       id = 'codeLine_' + iLine;
       content.push(
         <div className={"codeLine"} key={id} ref={id}><pre>{codeLine}</pre></div>
@@ -106,7 +114,7 @@ var Editor = React.createClass({
       <div
         tabIndex = {this.props.autoFocus ? -1 : 0}
         contentEditable = {true}
-        spellcheck = {false}
+        spellCheck = {false}
         onPaste = {this.onPaste}
         onMouseDown = {this.onMouseDown}
         onSelect = {this.onSelect}
@@ -465,5 +473,5 @@ var Editor = React.createClass({
   },
 });
 
-  return Editor
+  return EditField
 });
