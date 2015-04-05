@@ -106,6 +106,7 @@ var Editor = React.createClass({
       <div
         tabIndex = {this.props.autoFocus ? -1 : 0}
         contentEditable = {true}
+        spellcheck = {false}
         onPaste = {this.onPaste}
         onMouseDown = {this.onMouseDown}
         onSelect = {this.onSelect}
