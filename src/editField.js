@@ -174,7 +174,7 @@ var EditField = React.createClass({
       this.state.cursorHandled = true;
     
     if (key == 'Shift') {
-      selection.setCollapsed(false);
+      selection.type = 'Range';
     } else if (key == 'ArrowLeft') {
       if (selection.isCursorOnLineStart()) {
         if (selection.isPreviousLineExist())
@@ -268,7 +268,7 @@ var EditField = React.createClass({
         this._preventDefaultEventAction(e);
         this.forceUpdate();
       } else {
-        if (!selection.isCollapsed || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown') {
+        if (selection.type == 'Range' || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown' || key == 'ArrowLeft' || key == 'ArrowRight') {
           // show cursor at end of line if virtual cursor > line length and while range selection
           this._preventDefaultEventAction(e)
           this._showSelection();
@@ -284,6 +284,11 @@ var EditField = React.createClass({
     if (key == 'Enter')
       key = "\n";
     
+    if (!this.state.selection.isCollapsed()) {
+      // delete selection
+    }
+    this.state.selection.collapse();
+    
     this.props.text.insert(RopePosition(selection.getCursorLine(), selection.getCursorColumn()), key)
     if (key == "\n")
       selection.moveCursorToLineStart(selection.getCursorLine() + 1);
@@ -295,7 +300,7 @@ var EditField = React.createClass({
   
   onKeyUp: function(e) {
     if (e.key == 'Shift')
-      this.state.selection.setCollapsed(true);
+      this.state.selection.collapse();
   },
       
   _preventDefaultEventAction: function(event) {

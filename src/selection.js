@@ -20,9 +20,15 @@ define(['rangy'], function(rangy){
     this.firstColumn = isDefined(firstColumn)? firstColumn: 0;
     this.lastLine = isDefined(lastLine)? lastLine: this.firstLine;
     this.lastColumn = isDefined(lastColumn)? lastColumn: this.firstColumn;
-    this.isCollapsed = (this.firstLine === this.lastLine && this.firstColumn === this.lastColumn); // if true - only the cursor
+    this.type = this.isCollapsed()? 'Caret': 'Range';
   }
 
+  Selection.prototype.collapse = function() {
+    this.firstLine = this.lastLine;
+    this.firstColumn = this.lastColumn;
+    this.type = 'Caret';
+  }
+  
   Selection.prototype.getCursor = function(){
     return {
       line:    this.lastLine,
@@ -38,36 +44,35 @@ define(['rangy'], function(rangy){
     return this.lastLine;
   }
 
+  Selection.prototype.isCollapsed = function() {
+    return this.firstLine === this.lastLine && this.firstColumn === this.lastColumn;
+  }
+  
   Selection.prototype.isReversed = function() {
     return (this.firstLine > this.lastLine) || (this.firstLine === this.lastLine && this.firstColumn > this.lastColumn);
   }
-
   
   Selection.prototype.reverse = function(){
     this.firstLine = this.lastLine + (this.lastLine = this.firstLine, 0)
     this.firstColumn = this.lastColumn + (this.lastColumn = this.firstColumn, 0)
   }
-  
-  Selection.prototype.setCollapsed = function(collapsed) {
-    this.isCollapsed = collapsed;
-  }
-  
+    
   Selection.prototype.setCursorLine = function(line){
     this.lastLine = line;
-    if (this.isCollapsed)
+    if (this.type == 'Caret')
       this.firstLine = line;
   }
   
   Selection.prototype.setCursorColumn = function(column){
     this.lastColumn = column;
-    if (this.isCollapsed)
+    if (this.type == 'Caret')
       this.firstColumn = column;
   }
   
   Selection.prototype.setCursor = function(line, column) {
     this.lastLine = line;
     this.lastColumn = column;
-    if (this.isCollapsed){
+    if (this.type == 'Caret') {
       this.firstLine = line;
       this.firstColumn = column;
     }
@@ -269,13 +274,13 @@ define(['rangy'], function(rangy){
     var range = nativeSelection.getRangeAt(0);
     var node, lineNode;
     if (!range.collapsed) {
-      this.setCollapsed(false);
+      this.type = 'Range';
       node = range.startContainer;
       lineNode = domManager.getLineNodeFromNestedNode(node);
       this.firstLine = domManager.getRelativeLineIndexByNode(lineNode);
       this.firstColumn = this._getSelectionPosition(lineNode, true);
     } else
-      this.setCollapsed(true)
+      this.type = 'Caret';
       
     node = range.endContainer;
     lineNode = domManager.getLineNodeFromNestedNode(node);
