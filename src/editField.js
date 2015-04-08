@@ -261,16 +261,18 @@ var EditField = React.createClass({
     if (!(key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown'))
       selection.resetSavedCursorColumn();
 
-    var needUpdate = this.state.windowPosition.tryUpdateToSelection(selection);
-    if (needUpdate) {
-      // prevent default action to stop additional (native) caret movement
-      this._preventDefaultEventAction(e);
-      this.forceUpdate();
-    } else {
-      if (!selection.isCollapsed || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown') {
-        // show cursor at end of line if virtual cursor > line length and while range selection
-        this._preventDefaultEventAction(e)
-        this._showSelection();
+    if (key !== 'Unidentified') {
+      var needUpdate = this.state.windowPosition.tryUpdateToSelection(selection);
+      if (needUpdate) {
+        // prevent default action to stop additional (native) caret movement
+        this._preventDefaultEventAction(e);
+        this.forceUpdate();
+      } else {
+        if (!selection.isCollapsed || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown') {
+          // show cursor at end of line if virtual cursor > line length and while range selection
+          this._preventDefaultEventAction(e)
+          this._showSelection();
+        }
       }
     }
   },
