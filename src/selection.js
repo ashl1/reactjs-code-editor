@@ -20,13 +20,12 @@ define(['rangy'], function(rangy){
     this.firstColumn = isDefined(firstColumn)? firstColumn: 0;
     this.lastLine = isDefined(lastLine)? lastLine: this.firstLine;
     this.lastColumn = isDefined(lastColumn)? lastColumn: this.firstColumn;
-    this.type = this.isCollapsed()? 'Caret': 'Range';
+    this.selectingState = false;
   }
 
   Selection.prototype.collapse = function() {
     this.firstLine = this.lastLine;
     this.firstColumn = this.lastColumn;
-    this.type = 'Caret';
   }
   
   Selection.prototype.getCursor = function(){
@@ -59,20 +58,20 @@ define(['rangy'], function(rangy){
     
   Selection.prototype.setCursorLine = function(line){
     this.lastLine = line;
-    if (this.type == 'Caret')
+    if (!this.selectingState)
       this.firstLine = line;
   }
   
   Selection.prototype.setCursorColumn = function(column){
     this.lastColumn = column;
-    if (this.type == 'Caret')
+    if (!this.selectingState)
       this.firstColumn = column;
   }
   
   Selection.prototype.setCursor = function(line, column) {
     this.lastLine = line;
     this.lastColumn = column;
-    if (this.type == 'Caret') {
+    if (!this.selectingState) {
       this.firstLine = line;
       this.firstColumn = column;
     }
@@ -274,13 +273,13 @@ define(['rangy'], function(rangy){
     var range = nativeSelection.getRangeAt(0);
     var node, lineNode;
     if (!range.collapsed) {
-      this.type = 'Range';
+      this.selectingState = true;
       node = range.startContainer;
       lineNode = domManager.getLineNodeFromNestedNode(node);
       this.firstLine = domManager.getRelativeLineIndexByNode(lineNode);
       this.firstColumn = this._getSelectionPosition(lineNode, true);
     } else
-      this.type = 'Caret';
+      this.selectingState = false;
       
     node = range.endContainer;
     lineNode = domManager.getLineNodeFromNestedNode(node);

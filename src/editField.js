@@ -174,7 +174,7 @@ var EditField = React.createClass({
       this.state.cursorHandled = true;
     
     if (key == 'Shift') {
-      selection.type = 'Range';
+      selection.selectingState = true;
     } else if (key == 'ArrowLeft') {
       if (selection.isCursorOnLineStart()) {
         if (selection.isPreviousLineExist())
@@ -224,32 +224,36 @@ var EditField = React.createClass({
         selection.moveCursorToLineEnd(selection.getCursorLine())
 
     } else if (key == 'Backspace') {
-      if (selection.isCursorOnLineStart()) {
-        if (selection.isPreviousLineExist()) {
-          var previousLine = selection.getCursorLine() - 1,
-              previousLineLength = this.props.text.getLineLength(previousLine);
-          selection.moveCursorToLineEnd(previousLine);
-          this.props.text.remove(
-            RopePosition(previousLine, previousLineLength),
-            RopePosition(previousLine, previousLineLength));
+      if (!this._tryDeleteSelectedText()) {
+        if (selection.isCursorOnLineStart()) {
+          if (selection.isPreviousLineExist()) {
+            var previousLine = selection.getCursorLine() - 1,
+                previousLineLength = this.props.text.getLineLength(previousLine);
+            selection.moveCursorToLineEnd(previousLine);
+            this.props.text.remove(
+              RopePosition(previousLine, previousLineLength),
+              RopePosition(previousLine, previousLineLength));
+          }
+        } else { // not on real line start
+          var symbolPosition = RopePosition(selection.getCursorLine(), selection.getCursorColumn() - 1);
+          this.props.text.remove(symbolPosition, symbolPosition);
+          selection.moveCursorLeft();
         }
-      } else { // not on real line start
-        var symbolPosition = RopePosition(selection.getCursorLine(), selection.getCursorColumn() - 1);
-        this.props.text.remove(symbolPosition, symbolPosition);
-        selection.moveCursorLeft();
       }
       this._preventDefaultEventAction(e)
       this.forceUpdate();
 
     } else if (key == 'Delete') {
-      if (selection.isCursorOnLineEnd()) {
-        if (selection.isNextLineExist()) {
-          var symbolPosition = RopePosition(selection.getCursorLine(), this.props.text.getLineLength(selection.getCursorLine()))
+      if (!this._tryDeleteSelectedText()) {
+        if (selection.isCursorOnLineEnd()) {
+          if (selection.isNextLineExist()) {
+            var symbolPosition = RopePosition(selection.getCursorLine(), this.props.text.getLineLength(selection.getCursorLine()))
+            this.props.text.remove(symbolPosition, symbolPosition);
+          }
+        } else { // not on real line end
+          var symbolPosition = RopePosition(selection.getCursorLine(), selection.getCursorColumn());
           this.props.text.remove(symbolPosition, symbolPosition);
         }
-      } else { // not on real line end
-        var symbolPosition = RopePosition(selection.getCursorLine(), selection.getCursorColumn());
-        this.props.text.remove(symbolPosition, symbolPosition);
       }
       this._preventDefaultEventAction(e)
       this.forceUpdate();
@@ -268,8 +272,8 @@ var EditField = React.createClass({
         this._preventDefaultEventAction(e);
         this.forceUpdate();
       } else {
-        if (selection.type == 'Range' || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown' || key == 'ArrowLeft' || key == 'ArrowRight') {
-          // show cursor at end of line if virtual cursor > line length and while range selection
+        if (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown' || key == 'ArrowLeft' || key == 'ArrowRight') {
+          // show cursor at end of line if virtual cursor > line length, and while range selection, and after selecting
           this._preventDefaultEventAction(e)
           this._showSelection();
         }
@@ -284,10 +288,9 @@ var EditField = React.createClass({
     if (key == 'Enter')
       key = "\n";
     
-    if (!this.state.selection.isCollapsed()) {
-      // delete selection
-    }
-    this.state.selection.collapse();
+    this._tryDeleteSelectedText();
+    selection.collapse();
+    selection.selectingState= false;
     
     this.props.text.insert(RopePosition(selection.getCursorLine(), selection.getCursorColumn()), key)
     if (key == "\n")
@@ -300,9 +303,9 @@ var EditField = React.createClass({
   
   onKeyUp: function(e) {
     if (e.key == 'Shift')
-      this.state.selection.collapse();
+      this.state.selection.selectingState = false;
   },
-      
+    
   _preventDefaultEventAction: function(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -310,6 +313,23 @@ var EditField = React.createClass({
 
   _showSelection: function(){
     this.state.selection.getRelativeSelection(this.state.windowPosition).show(this.state.domManager);
+  },
+
+  _tryDeleteSelectedText: function() {
+    var selection = this.state.selection;
+    
+    if (selection.isCollapsed())
+      return false;
+    
+    if (selection.isReversed())
+      selection.reverse()
+    var lastLine = selection.lastLine - (selection.lastColumn === 0? 1: 0)
+    var lastColumn = selection.lastColumn === 0? this.props.text.getLineLength(lastLine): selection.lastColumn - 1;
+    this.props.text.remove(RopePosition(selection.firstLine, selection.firstColumn), RopePosition(lastLine, lastColumn));
+    
+    // collapse to first symbols
+    selection.setCursor(selection.firstLine, selection.firstColumn);
+    return true;
   },
   
 });
