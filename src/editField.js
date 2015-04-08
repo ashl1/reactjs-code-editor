@@ -144,6 +144,14 @@ var EditField = React.createClass({
     var relativeSelection = new Selection.RelativeSelection()
     relativeSelection.updateFromNative(this.state.domManager);
     this.state.selection = relativeSelection.getAbsoluteSelection(this.state.windowPosition, this.props.text);
+    
+    // may require update if cursor position became greater than line length
+    var needUpdate = this.state.windowPosition.tryUpdateToSelection(this.state.selection);
+    if (needUpdate) {
+      // prevent default action to stop additional (native) caret movement
+      this._preventDefaultEventAction(e);
+      this.forceUpdate();
+    }
   },
 
   onPaste: function(e){
@@ -255,8 +263,8 @@ var EditField = React.createClass({
       this._preventDefaultEventAction(e);
       this.forceUpdate();
     } else {
-      if (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown') {
-        // show cursor at end of line if virtual cursor > line length
+      if (!selection.isCollapsed || key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown') {
+        // show cursor at end of line if virtual cursor > line length and while range selection
         this._preventDefaultEventAction(e)
         this._showSelection();
       }

@@ -37,8 +37,13 @@ define(['rangy'], function(rangy){
   Selection.prototype.getCursorLine = function() {
     return this.lastLine;
   }
+
+  Selection.prototype.isReversed = function() {
+    return (this.firstLine > this.lastLine) || (this.firstLine > this.lastLine && thiss.firstColumn > this.lastColumn);
+  }
+
   
-  Selection.prototype.getReversed = function(){
+  Selection.prototype.reverse = function(){
     this.firstLine = this.lastLine + (this.lastLine = this.firstLine, 0)
     this.firstColumn = this.lastColumn + (this.lastColumn = this.firstColumn, 0)
   }
@@ -83,6 +88,10 @@ define(['rangy'], function(rangy){
     // determine to which direction previous cursor have been moved
     this.toUp = false;
     this.toRight = false;
+    
+    // correct to line length
+    this.firstColumn = Math.min(this.firstColumn, this.textManager.getLineLength(this.firstLine));
+    this.lastColumn = Math.min(this.lastColumn, this.textManager.getLineLength(this.lastLine));
   }
   AbsoluteSelection.prototype = Selection.prototype;
   AbsoluteSelection.prototype.constructor = AbsoluteSelection;
@@ -96,15 +105,14 @@ define(['rangy'], function(rangy){
     
   AbsoluteSelection.prototype.getRelativeSelection = function(windowPosition){
     var selection = new AbsoluteSelection(this.firstLine, this.firstColumn, this.lastLine, this.lastColumn, this.textManager)
-    var isReversed = (selection.firstLine > selection.lastLine) || (selection.firstLine > selection.lastLine && selections.firstColumn > selection.lastColumn);
-    if (isReversed)
-      selection = selection.getReversed()
+    if (selection.isReversed())
+      selection.reverse()
     
     selection._truncateToShowWindow(windowPosition);
     selection._convertToRelative(windowPosition);
 
-    if (isReversed)
-      selection = selection.getReversed()
+    if (selection.isReversed())
+      selection.reverse()
 
     return new RelativeSelection(
       selection.firstLine,
@@ -136,7 +144,7 @@ define(['rangy'], function(rangy){
     this.toUp = false;
     this.toRight = this.getCursorColumn() <= this.textManager.getLineLength(nextLine);
     this.setCursorLine(nextLine);
-    this.setCursorColumn(Math.min(this.savedLastColumn, this.textManager.getLineLength(this.getCursorColumn())));
+    this.setCursorColumn(Math.min(this.savedLastColumn, this.textManager.getLineLength(this.getCursorLine())));
   }
   
   AbsoluteSelection.prototype.moveCursorLeft = function() {
@@ -169,7 +177,7 @@ define(['rangy'], function(rangy){
     this.toUp = true;
     this.toRight = this.getCursorColumn() <= this.textManager.getLineLength(previousLine);
     this.setCursorLine(previousLine);
-    this.setCursorColumn(Math.min(this.savedLastColumn, this.textManager.getLineLength(this.getCursorColumn())));
+    this.setCursorColumn(Math.min(this.savedLastColumn, this.textManager.getLineLength(this.getCursorLine())));
   }
 
   AbsoluteSelection.prototype.resetSavedCursorColumn = function(){
@@ -248,7 +256,10 @@ define(['rangy'], function(rangy){
     range.setEnd(res.node, res.offset);
 
     browserSelection.removeAllRanges();
-    browserSelection.addRange(range);
+    var reversed = this.isReversed();
+    if (reversed)
+      range.reverse();
+    browserSelection.addRange(range, reversed);
   }
   
   RelativeSelection.prototype.updateFromNative = function(domManager){
