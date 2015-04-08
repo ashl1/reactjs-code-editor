@@ -1,4 +1,4 @@
-define(['react', 'rope', 'build/editField', 'lexer'], function(React, rope, EditField, lexer) {
+define(['react', 'rope', 'editField', 'lexer'], function(React, rope, EditField, lexer) {
   var onChange = function(){
     
   }

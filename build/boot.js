@@ -1,11 +1,11 @@
 requirejs.config({
-  baseUrl: './',
+  baseUrl: './build/',
 
   paths: {
-    'rangy': 'bower_components/rangy/rangy-core',
-    'react': 'bower_components/react/react',
-    'rope':  '../rope-avl-js/rope',
-    'lexer': '../rope-avl-js/lexer',
+    'rangy': '../bower_components/rangy/rangy-core',
+    'react': '../bower_components/react/react',
+    'rope':  '../../rope-avl-js/rope',
+    'lexer': '../../rope-avl-js/lexer',
   },
 
   shim: {
@@ -18,4 +18,4 @@ requirejs.config({
   }
 });
 
-require(['build/editor']);
+require(['editor']);
