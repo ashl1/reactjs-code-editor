@@ -322,6 +322,7 @@ var EditField = React.createClass({
     else
       selection.moveCursorRight();
     this._preventDefaultEventAction(e)
+    this.state.windowPosition.tryUpdateToSelection(selection)
     this.forceUpdate();
   },
   
