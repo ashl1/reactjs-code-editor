@@ -105,13 +105,14 @@ define(['rangy'], function(rangy){
     
   AbsoluteSelection.prototype.getRelativeSelection = function(windowPosition){
     var selection = new AbsoluteSelection(this.firstLine, this.firstColumn, this.lastLine, this.lastColumn, this.textManager)
-    if (selection.isReversed())
+    var reversed = selection.isReversed();
+    if (reversed)
       selection.reverse()
     
     selection._truncateToShowWindow(windowPosition);
     selection._convertToRelative(windowPosition);
 
-    if (selection.isReversed())
+    if (reversed)
       selection.reverse()
 
     return new RelativeSelection(
@@ -248,6 +249,10 @@ define(['rangy'], function(rangy){
   RelativeSelection.prototype.show = function(domManager){
     var browserSelection = rangy.getSelection();
     var range = rangy.createRange();
+
+    var reversed = this.isReversed();
+    if (reversed)
+      this.reverse();
     
     var res = domManager.getNestedTextNodeAndOffset(this.firstLine, this.firstColumn)
     range.setStart(res.node, res.offset);
@@ -256,14 +261,12 @@ define(['rangy'], function(rangy){
     range.setEnd(res.node, res.offset);
 
     browserSelection.removeAllRanges();
-    var reversed = this.isReversed();
-    if (reversed)
-      range.reverse();
     browserSelection.addRange(range, reversed);
   }
   
   RelativeSelection.prototype.updateFromNative = function(domManager){
-    var range = rangy.getSelection().getRangeAt(0);
+    var nativeSelection = rangy.getSelection();
+    var range = nativeSelection.getRangeAt(0);
     var node, lineNode;
     if (!range.collapsed) {
       this.setCollapsed(false);
@@ -278,6 +281,8 @@ define(['rangy'], function(rangy){
     lineNode = domManager.getLineNodeFromNestedNode(node);
     this.setCursorLine(domManager.getRelativeLineIndexByNode(lineNode));
     this.setCursorColumn(this._getSelectionPosition(lineNode, false));
+    if (nativeSelection.isBackwards())
+      this.reverse();
   }
   
   return {
