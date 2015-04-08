@@ -169,9 +169,6 @@ var EditField = React.createClass({
     var key = e.key;
     var selection = this.state.selection;
 
-    if (! (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown'))
-      selection.resetSavedCursorColumn();
-
     if (key == 'ArrowLeft' || key == 'ArrowRight' || key == 'ArrowDown' || key == 'ArrowUp' ||
         key == 'PageUp' || key == 'PageDown')
       this.state.cursorHandled = true;
@@ -260,6 +257,9 @@ var EditField = React.createClass({
     } else if (key == 'Tab') {
       
     }
+
+    if (!(key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown'))
+      selection.resetSavedCursorColumn();
 
     var needUpdate = this.state.windowPosition.tryUpdateToSelection(selection);
     if (needUpdate) {
