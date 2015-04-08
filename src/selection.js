@@ -39,7 +39,7 @@ define(['rangy'], function(rangy){
   }
 
   Selection.prototype.isReversed = function() {
-    return (this.firstLine > this.lastLine) || (this.firstLine > this.lastLine && thiss.firstColumn > this.lastColumn);
+    return (this.firstLine > this.lastLine) || (this.firstLine === this.lastLine && this.firstColumn > this.lastColumn);
   }
 
   
