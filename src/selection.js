@@ -187,7 +187,7 @@ define(['rangy'], function(rangy){
 
   AbsoluteSelection.prototype._truncateColumnToShowWindow = function(column, windowPosition) {
     column = Math.max(column, windowPosition.firstColumn);
-    column = Math.min(windowPosition.lastColumn, column)
+    column = Math.min(windowPosition.lastColumn + 1, column)
     return column;
   },
   
