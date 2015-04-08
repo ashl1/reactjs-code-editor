@@ -195,14 +195,18 @@ var EditField = React.createClass({
     } else if (key == 'ArrowUp') {
       if (selection.isPreviousLineExist())
         selection.moveCursorUp()
-      else // prev line does not exist
+      else {// prev line does not exist
         selection.moveCursorToLineStart(selection.getCursorLine())
+        selection.resetSavedCursorColumn();
+      }
         
     } else if (key == 'ArrowDown') {
       if (selection.isNextLineExist())
         selection.moveCursorDown()
-      else // next line does not exist
+      else { // next line does not exist
         selection.moveCursorToLineEnd(selection.getCursorLine())
+        selection.resetSavedCursorColumn();
+      }
       
     } else if (key == 'Home') {
       selection.moveCursorToLineStart(selection.getCursorLine())
