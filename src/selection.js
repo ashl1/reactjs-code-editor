@@ -100,6 +100,14 @@ define(['rangy'], function(rangy){
   AbsoluteSelection.prototype = Selection.prototype;
   AbsoluteSelection.prototype.constructor = AbsoluteSelection;
   
+  AbsoluteSelection.prototype.clone = function(){
+    return new AbsoluteSelection(
+      this.firstLine, this.firstColumn,
+      this.lastLine, this.lastColumn,
+      this.textManager
+    )
+  }
+  
   AbsoluteSelection.prototype._convertToRelative = function(windowPosition) {
       this.firstLine -= windowPosition.firstLine,
       this.firstColumn -= windowPosition.firstColumn,

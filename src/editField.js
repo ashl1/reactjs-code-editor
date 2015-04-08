@@ -111,6 +111,8 @@ var EditField = React.createClass({
         contentEditable = {true}
         spellCheck = {false}
         onPaste = {this.onPaste}
+        onCut = {this.onCut}
+        onCopy = {this.onCopy}
         onMouseDown = {this.onMouseDown}
         onSelect = {this.onSelect}
         onTouchStart = {this.onMouseDown}
@@ -154,15 +156,37 @@ var EditField = React.createClass({
     }
   },
 
+  onCut: function(e) {
+    this._preventDefaultEventAction(e);
+    
+    if (this.state.selection.isCollapsed())
+      return;
+    
+    var positions = this._convertSelectionToRopePosition();
+    e.clipboardData.setData('text/plain', this.props.text.substr(positions[0], positions[1]))
+    this._tryDeleteSelectedText();
+    this.state.windowPosition.tryUpdateToSelection(this.state.selection);
+    this.forceUpdate();
+  },
+  
+  onCopy: function(e) {
+    this._preventDefaultEventAction(e);
+    
+    if (this.state.selection.isCollapsed())
+      return;
+    
+    var positions = this._convertSelectionToRopePosition();
+    e.clipboardData.setData('text/plain', this.props.text.substr(positions[0], positions[1]))
+  },
+  
   onPaste: function(e){
-    // handle paste manually to ensure we unset our placeholder
-    e.preventDefault();
+    this._preventDefaultEventAction(e);
 
-    var data = e.clipboardData.getData('text/plain');
-
-    // prevent text longer then our max-length from being
-    // added
-    this.setText(data);
+    this._tryDeleteSelectedText();
+    var text = e.clipboardData.getData('text/plain');
+    this.props.text.insert(RopePosition(this.state.selection.getCursorLine(), this.state.selection.getCursorColumn()), text)
+    this.state.windowPosition.tryUpdateToSelection(this.state.selection);
+    this.forceUpdate()
   },
 
   onKeyDown: function(e) {
@@ -306,6 +330,16 @@ var EditField = React.createClass({
       this.state.selection.selectingState = false;
   },
     
+  _convertSelectionToRopePosition: function(){
+    var selection = this.state.selection.clone();
+    
+    if (selection.isReversed())
+      selection.reverse()
+    var lastLine = selection.lastLine - (selection.lastColumn === 0? 1: 0)
+    var lastColumn = selection.lastColumn === 0? this.props.text.getLineLength(lastLine): selection.lastColumn - 1;
+    return [RopePosition(selection.firstLine, selection.firstColumn), RopePosition(lastLine, lastColumn)]
+  },
+  
   _preventDefaultEventAction: function(event) {
     event.preventDefault();
     event.stopPropagation();
@@ -321,11 +355,8 @@ var EditField = React.createClass({
     if (selection.isCollapsed())
       return false;
     
-    if (selection.isReversed())
-      selection.reverse()
-    var lastLine = selection.lastLine - (selection.lastColumn === 0? 1: 0)
-    var lastColumn = selection.lastColumn === 0? this.props.text.getLineLength(lastLine): selection.lastColumn - 1;
-    this.props.text.remove(RopePosition(selection.firstLine, selection.firstColumn), RopePosition(lastLine, lastColumn));
+    var positions = this._convertSelectionToRopePosition();
+    this.props.text.remove(positions[0], positions[1]);
     
     // collapse to first symbols
     selection.setCursor(selection.firstLine, selection.firstColumn);
