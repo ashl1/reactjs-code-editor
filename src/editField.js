@@ -54,6 +54,11 @@ var EditField = React.createClass({
     };
   },
 
+  componentWillReceiveProps: function(nextProps){
+    this.state.selection = new Selection.AbsoluteSelection(nextProps.text);
+    this.state.windowPosition = WindowPosition(this.state.windowPosition.firstLine, this.state.windowPosition.firstColumn, nextProps.linesVisible, nextProps.columnsVisible);
+  },
+  
   componentDidMount: function(){
     if (!rangy.initialized)
       rangy.init();

@@ -6,7 +6,24 @@
     <link rel="stylesheet" type="text/css" href="css/main.css" />
   </head>
   <body>
-    <div id="toolbar"><input type="file" id="userFile" /></div>
-    <div id="editor"></div>
+    <div id="toolbar">
+      <input class="toolbarElement" type="file" id="userFile" />
+      <div class="toolbarElement" id="editorSize">
+        <div class="toolbarElement">
+          <input class="toolbarElement" type="number" id="editorHeight" size="3" value="15" disabled />
+          <label for="editorHeight">Высота</label>
+        </div>
+        <div class="toolbarElement">
+          <input class="toolbarElement" type="number" id="editorWidth" size="3" value="40" disabled />
+          <label for="editorWidth">Ширина</label>
+        </div>
+        <div class="toolbarElement">
+          <input type="checkbox" id="editorSizeAuto" value="auto" checked>
+          <label for="editorSizeAuto">Авто</label>
+        </div>
+      </div>
+    </div>
+    <br style="clear: both;" />
+    <div id="editor"><div class="codeLine"></div></div>
   </body>
 </html>
