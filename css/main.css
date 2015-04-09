@@ -1,5 +1,6 @@
 .codeLine pre {
 	margin: 0;
+  tab-size: 2;
 }
 
 .operators {
