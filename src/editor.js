@@ -67,6 +67,12 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
       this.show();
     }
     
+    this.tryAutosize = function() {
+      if (document.getElementById('editorSizeAuto').checked)
+        this.autoSize();
+    }
+    
+    this.tryAutosize();
   }
   
   var editor = new Editor();
@@ -95,7 +101,6 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
     editor.widthChanged(Number(event.target.value));
   })
   window.addEventListener('resize', function(){
-    if (document.getElementById('editorSizeAuto').checked)
-      editor.autoSize();
+    editor.tryAutosize();
   })
 });
