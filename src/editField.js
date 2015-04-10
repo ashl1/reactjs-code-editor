@@ -335,7 +335,14 @@ var EditField = React.createClass({
     if (e.key == 'Shift')
       this.state.selection.selectingState = false;
   },
-    
+
+  gotoLine: function(lineIndex) {
+    lineIndex = Math.min(lineIndex, this.props.text.getLinesCount() - this.props.linesVisible);
+    this.state.windowPosition = WindowPosition(lineIndex, this.state.windowPosition.firstColumn,
+      this.props.linesVisible, this.props.columnsVisible)
+    this.forceUpdate();
+  },
+  
   _convertSelectionToRopePosition: function(){
     var selection = this.state.selection.clone();
     

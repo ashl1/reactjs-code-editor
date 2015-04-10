@@ -67,6 +67,10 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
       this.show();
     }
     
+    this.setLineStart = function(lineStart) {
+      this.editorForm.gotoLine(lineStart)
+    }
+    
     this.tryAutosize = function() {
       if (document.getElementById('editorSizeAuto').checked)
         this.autoSize();
@@ -80,6 +84,7 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
 
   var editorHeight = document.getElementById('editorHeight');
   var editorWidth = document.getElementById('editorWidth');
+  var lineStart = document.getElementById('lineStart')
   document.getElementById('editorSizeAuto').addEventListener('change', function(event){
     if (event.target.checked) {
       editorHeight.disabled = true;
@@ -99,6 +104,9 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
   })
   editorWidth.addEventListener('change', function(event){
     editor.widthChanged(Number(event.target.value));
+  })
+  lineStart.addEventListener('change', function(event){
+    editor.setLineStart(Number(event.target.value))
   })
   window.addEventListener('resize', function(){
     editor.tryAutosize();
