@@ -1,4 +1,4 @@
-define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React, rope, EditField, lexer, getMonoTextLengthLessOrEqualElementWidth) {
+define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React, rope, EditField, lexer, MeasureString) {
   var onChange = function(){
     
   }
@@ -60,15 +60,16 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
     }
     
     this.autoSize = function() {
-      this.width = getMonoTextLengthLessOrEqualElementWidth(this.editField.clientWidth, this.getFirstElementByClassName('codeLine'));
+      var codeLineElement = this.getFirstElementByClassName('codeLine');
+      this.width = MeasureString.getMonoTextLengthLessOrEqualElementWidth(this.editField.clientWidth, codeLineElement);
+      this.height = MeasureString.getMonoTextLengthLessOrEqualElementHeight(this.editField.clientHeight, codeLineElement.childNodes[0], codeLineElement);
+
       this.show();
     }
     
     // init
-    if (document.getElementById('editorSizeAuto').checked) {
-      this.height = Number(document.getElementById('editorHeight').value);
+    if (document.getElementById('editorSizeAuto').checked)
       this.autoSize();
-    }
     
   }
   

@@ -1,3 +1,30 @@
+html,body {
+  height: 100%;
+  margin: 0
+}
+
+.container {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.container .row {
+  flex: 0 1 30px;
+}
+
+.container #toolbar {
+  flex: 0 1 auto;
+}
+
+.container #editor {
+  flex: 1 1 auto;
+}
+
+.container #footer {
+  flex: 0 1 30px;
+}
+
 .toolbarElement {
   float: left;
 }

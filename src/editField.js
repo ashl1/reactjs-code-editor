@@ -110,7 +110,6 @@ var EditField = React.createClass({
     }
     
     return (
-      <div>
       <div
         tabIndex = {this.props.autoFocus ? -1 : 0}
         contentEditable = {true}
@@ -128,9 +127,10 @@ var EditField = React.createClass({
       >
         {content}
       </div>
+    )/*
         <div>{this.state.selection.getCursorLine()} - {this.state.selection.getCursorColumn()}</div>
       </div>
-    )
+    )*/
   },
 
   onMouseDown: function(e) {

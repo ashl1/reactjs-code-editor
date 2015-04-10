@@ -4,6 +4,10 @@
 
 define(function(){
   
+  var buildStringFromElement = function(element, count) {
+    return new Array(count + 1).join(element)
+  }
+  
 /**
  * Measure the width of the given `str` with `el`.
  *
@@ -13,8 +17,8 @@ define(function(){
  * @api public
  */
 
-var measureString = function(el, str){
-  var dup = document.createElement('span');
+var measureString = function(el, str, isWidth){
+  var dup = document.createElement(isWidth? 'span': 'div');
   var styl = window.getComputedStyle(el);
   dup.style.letterSpacing = styl.letterSpacing;
   dup.style.textTransform = styl.textTransform;
@@ -23,27 +27,28 @@ var measureString = function(el, str){
   dup.style.whiteSpace = 'nowrap';
   dup.style.top = (window.innerHeight * 2) + 'px';
   dup.style.width = 'auto';
+  //dup.style.height = 'auto'
   dup.style.padding = 0;
-  dup.textContent = str;
+  if (isWidth)
+    dup.textContent = str;
+  else
+    dup.innerHTML = str;
   document.body.appendChild(dup);
-  var width = dup.clientWidth;
+  var widthOrHeight = isWidth? dup.clientWidth: dup.clientHeight;
   document.body.removeChild(dup);
-  return width;
+  return widthOrHeight;
 };
 
-var getTextLengthLessOrEqualElementWidth = function(string, width, elementStyle) {
-  if (measureString(elementStyle, string) < width)
-    return string.length;
-  
+var getTextLengthLessOrEqualElementWidthOrHeight = function(stringPart, widthOrHeight, elementStyle, isWidth) {  
   var startRange = 0, endRange = 1, midRange;
   
-  while (measureString(elementStyle, string.substring(0, endRange)) < width)
+  while (measureString(elementStyle, buildStringFromElement(stringPart, endRange), isWidth) < widthOrHeight)
     endRange = endRange << 1;
   
-  // need less or equal width
+  // need less or equal widthOrHeight
   while (endRange - startRange > 1) {
     midRange = Math.floor((startRange + endRange) / 2);
-    if (width < measureString(elementStyle, string.substring(0, midRange)))
+    if (widthOrHeight < measureString(elementStyle, buildStringFromElement(stringPart, midRange), isWidth))
       endRange = midRange
     else // >=
       startRange = midRange;
@@ -52,11 +57,15 @@ var getTextLengthLessOrEqualElementWidth = function(string, width, elementStyle)
 }
 
 var getMonoTextLengthLessOrEqualElementWidth = function(width, elementStyle) {
-  var stringLength = 200;
-  // FIXME: determine maximum length
-  var string = new Array(stringLength + 1).join('a');
-  return getTextLengthLessOrEqualElementWidth(string, width, elementStyle);
+  return getTextLengthLessOrEqualElementWidthOrHeight('a', width, elementStyle, true);
 }
 
-return getMonoTextLengthLessOrEqualElementWidth;
+var getMonoTextLengthLessOrEqualElementHeight = function(height, elementStyle, lineElement) {
+  return getTextLengthLessOrEqualElementWidthOrHeight(lineElement.outerHTML, height, elementStyle, false)
+}
+
+return {
+  getMonoTextLengthLessOrEqualElementWidth: getMonoTextLengthLessOrEqualElementWidth,
+  getMonoTextLengthLessOrEqualElementHeight: getMonoTextLengthLessOrEqualElementHeight,
+}
 });
