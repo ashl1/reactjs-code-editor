@@ -1,8 +1,50 @@
 define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React, rope, EditField, lexer, MeasureString) {
-  var onChange = function(){
+  var TwoEditFields = React.createClass({
+    propTypes: {
+      linesVisible: React.PropTypes.number,
+      columnsVisible: React.PropTypes.number,
+      
+      text: React.PropTypes.instanceOf(Rope).isRequired,
+      autoFocus: React.PropTypes.bool,
+      codeHighlight: React.PropTypes.bool,
+    },
     
-  }
-
+    getDefaultProps: function() {
+      return {
+        autoFocus: true,
+        linesVisible: 40,
+        columnsVisible: 80,
+        codeHighlight: true,
+      };
+    },
+  
+    render: function(){
+      var self = this
+      return (
+        <div>
+        <EditField
+          linesVisible = {this.props.linesVisible}
+          columnsVisible = {this.props.columnsVisible}
+          text = {this.props.text}
+          onChange = {function(){self.update(2)}}
+          ref = {"editField1"}
+        />
+        <EditField
+          linesVisible = {this.props.linesVisible}
+          columnsVisible = {this.props.columnsVisible}
+          text = {this.props.text}
+          onChange = {function(){self.update(1)}}
+          ref = {"editField2"}
+        />
+        </div>
+      )
+    },
+    
+    update: function(editFieldIndex) {
+      this.refs['editField'+editFieldIndex].forceUpdate();
+    },
+  })
+  
   var Editor = function(){
     this.lexer = Lexer();
     this.rope = Rope("", this.lexer)
@@ -34,11 +76,10 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
     
     this.show = function(){
       this.editorForm = React.render(
-        <EditField
-          linesVisible = {this.height}
-          columnsVisible = {this.width}
-          text = {this.rope}
-          onChange = {onChange}
+        <TwoEditFields
+           linesVisible = {this.height}
+           columnsVisible = {this.width}
+           text = {this.rope}
         />, this.editField
       )
     }
@@ -62,13 +103,13 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
     this.autoSize = function() {
       var codeLineElement = this.getFirstElementByClassName('codeLine');
       this.width = MeasureString.getMonoTextLengthLessOrEqualElementWidth(this.editField.clientWidth, codeLineElement);
-      this.height = MeasureString.getMonoTextLengthLessOrEqualElementHeight(this.editField.clientHeight, codeLineElement.childNodes[0], codeLineElement);
+      this.height = Math.floor( MeasureString.getMonoTextLengthLessOrEqualElementHeight(this.editField.clientHeight, codeLineElement.childNodes[0], codeLineElement) / 2);
 
       this.show();
     }
     
-    this.setLineStart = function(lineStart) {
-      this.editorForm.gotoLine(lineStart)
+    this.setLineStart = function(editFieldIndex, lineStart) {
+      this.editorForm.refs['editField' + editFieldIndex].gotoLine(lineStart)
     }
     
     this.tryAutosize = function() {
@@ -84,7 +125,8 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
 
   var editorHeight = document.getElementById('editorHeight');
   var editorWidth = document.getElementById('editorWidth');
-  var lineStart = document.getElementById('lineStart')
+  var lineStart1 = document.getElementById('lineStart1')
+  var lineStart2 = document.getElementById('lineStart2')
   document.getElementById('editorSizeAuto').addEventListener('change', function(event){
     if (event.target.checked) {
       editorHeight.disabled = true;
@@ -105,8 +147,11 @@ define(['react', 'rope', 'editField', 'lexer', 'measure-string'], function(React
   editorWidth.addEventListener('change', function(event){
     editor.widthChanged(Number(event.target.value));
   })
-  lineStart.addEventListener('change', function(event){
-    editor.setLineStart(Number(event.target.value))
+  lineStart1.addEventListener('change', function(event){
+    editor.setLineStart(1, Number(event.target.value))
+  })
+  lineStart2.addEventListener('change', function(event){
+    editor.setLineStart(2, Number(event.target.value))
   })
   window.addEventListener('resize', function(){
     editor.tryAutosize();

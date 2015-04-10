@@ -31,7 +31,7 @@ var EditField = React.createClass({
     columnsVisible: React.PropTypes.number,
     
     text: React.PropTypes.instanceOf(Rope).isRequired,
-    onChange: React.PropTypes.func.isRequired,
+    onChange: React.PropTypes.func.isRequired, // after the text is changed
     autoFocus: React.PropTypes.bool,
     codeHighlight: React.PropTypes.bool,
   },
@@ -172,6 +172,7 @@ var EditField = React.createClass({
     this._tryDeleteSelectedText();
     this.state.windowPosition.tryUpdateToSelection(this.state.selection);
     this.forceUpdate();
+    this.props.onChange();
   },
   
   onCopy: function(e) {
@@ -192,6 +193,7 @@ var EditField = React.createClass({
     this.props.text.insert(RopePosition(this.state.selection.getCursorLine(), this.state.selection.getCursorColumn()), text)
     this.state.windowPosition.tryUpdateToSelection(this.state.selection);
     this.forceUpdate()
+    this.props.onChange();
   },
 
   onKeyDown: function(e) {
@@ -300,6 +302,7 @@ var EditField = React.createClass({
         // prevent default action to stop additional (native) caret movement
         this._preventDefaultEventAction(e);
         this.forceUpdate();
+        this.props.onChange();
       } else {
         if (key == 'ArrowUp' || key == 'ArrowDown' || key == 'PageUp' || key == 'PageDown' || key == 'ArrowLeft' || key == 'ArrowRight') {
           // show cursor at end of line if virtual cursor > line length, and while range selection, and after selecting
@@ -329,6 +332,7 @@ var EditField = React.createClass({
     this._preventDefaultEventAction(e)
     this.state.windowPosition.tryUpdateToSelection(selection)
     this.forceUpdate();
+    this.props.onChange();
   },
   
   onKeyUp: function(e) {
