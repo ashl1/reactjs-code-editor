@@ -343,7 +343,7 @@ var EditField = React.createClass({
   },
 
   gotoLine: function(lineIndex) {
-    lineIndex = Math.min(lineIndex, this.props.text.getLinesCount() - this.props.linesVisible);
+    lineIndex = Math.min(lineIndex, this.props.text.getLinesCount() - this.props.linesVisible + 1);
     this.state.windowPosition = WindowPosition(lineIndex, this.state.windowPosition.firstColumn,
       this.props.linesVisible, this.props.columnsVisible)
     this.forceUpdate();
