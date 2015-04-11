@@ -9,7 +9,7 @@ define(['react'], function(React){
   DomManager.prototype.getLineNodeFromNestedNode = function(node) {
     while (!node.classList || !node.classList.length || node.classList[0] != 'codeLine')
       node = node.parentNode;
-    return node
+    return (node.classList && node.classList.length && node.classList[0] == 'codeLine')? node: null;
   }
   
   DomManager.prototype._getLineNodeByIndex = function(index) {
@@ -52,6 +52,12 @@ define(['react'], function(React){
    * @api private
    */
 
+  DomManager.prototype.isChildrenOfNode = function (node, baseNode) {
+    while (node !== baseNode && node)
+      node = node.parentNode;
+    return node === baseNode;
+  }
+    
   DomManager.prototype._visitNodes = function (node, fn){
     if (node.nodeType == 3) 
       return fn(node)

@@ -276,6 +276,13 @@ define(['rangy'], function(rangy){
     browserSelection.addRange(range, reversed);
   }
   
+  RelativeSelection.prototype.tryToShowInNode = function(domManager, baseNode){
+    // determine if selection are already in some position of base node
+    var range = rangy.getSelection().getRangeAt(0);
+    if (domManager.isChildrenOfNode(range.endContainer, baseNode))
+      this.show(domManager);
+  },
+  
   RelativeSelection.prototype.updateFromNative = function(domManager){
     var nativeSelection = rangy.getSelection();
     var range = nativeSelection.getRangeAt(0);

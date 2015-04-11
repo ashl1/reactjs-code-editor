@@ -273,6 +273,7 @@ var EditField = React.createClass({
       }
       this._preventDefaultEventAction(e)
       this.forceUpdate();
+      this.props.onChange()
 
     } else if (key == 'Delete') {
       if (!this._tryDeleteSelectedText()) {
@@ -288,6 +289,7 @@ var EditField = React.createClass({
       }
       this._preventDefaultEventAction(e)
       this.forceUpdate();
+      this.props.onChange()
 
     } else if (key == 'Tab') {
       
@@ -363,7 +365,7 @@ var EditField = React.createClass({
   },
 
   _showSelection: function(){
-    this.state.selection.getRelativeSelection(this.state.windowPosition).show(this.state.domManager);
+    this.state.selection.getRelativeSelection(this.state.windowPosition).tryToShowInNode(this.state.domManager, this.getDOMNode());
   },
 
   _tryDeleteSelectedText: function() {
@@ -376,6 +378,8 @@ var EditField = React.createClass({
     this.props.text.remove(positions[0], positions[1]);
     
     // collapse to first symbols
+    if (selection.isReversed())
+      selection.reverse();
     selection.setCursor(selection.firstLine, selection.firstColumn);
     return true;
   },
