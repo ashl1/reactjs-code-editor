@@ -1,0 +1,8 @@
+bower_components/
+build/editor.js
+build/editField.js
+build/domManager.js
+build/measure-string.js
+build/selection.js
+build/windowPosition.js
+.module-cache
